@@ -1,17 +1,28 @@
 const path = require('path');
 const cors = require('cors');
 const express = require('express');
+const passport = require('passport');
+const PassportSetup = require('./passport');
 const { graphQLServer, graphQLGeoMiddleWare } = require('./graphqlServer');
 const authController = require('./controllers/authController');
+const session = require('express-session');
 require('dotenv').config();
 
 const apiRouter = require('./routes/api');
+const oauthRouter = require('./routes/oauth');
 const AppError = require('./utils/AppError.js');
 
 const app = express();
 
+app.use(session({
+  resave: true,
+  saveUninitialized: false,
+  secret: 'secret' 
+}));
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.urlencoded({ extended: true }));
 
 
@@ -28,6 +39,7 @@ app.use('/api/graphql', authController.validateToken, graphQLGeoMiddleWare, grap
 
 // send non-graphQL requests to appropriate router
 app.use('/api', apiRouter);
+app.use('/auth', oauthRouter);
 
 // serve index.html file
 app.get('/*', (req, res, next) => {
