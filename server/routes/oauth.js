@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const passport = require('passport');
 
-router.get('/google', passport.authenticate('google', { scope: ['profile'] }));
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/login/success', (req, res) => {
   if (req.user) {
@@ -16,9 +16,12 @@ router.get('/login/success', (req, res) => {
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    successRedirect: 'http://localhost:3000/chapters',
-    failureRedirect: 'http://localhost:3000/signin',
-  })
+    successRedirect: 'http://localhost:8080/chapters',
+    failureRedirect: 'http://localhost:8080/signin',
+  }),
+  (req, res) => {
+    return res.send('success');
+  }
 );
 
 module.exports = router;
