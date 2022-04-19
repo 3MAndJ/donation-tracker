@@ -33,7 +33,7 @@ describe('Route integration', () => {
 
   describe('RootQuery: /graphql', () => {
     describe('item: ', () => {
-      
+
     });
   });
 
@@ -127,4 +127,14 @@ addUser
               }
             }`,
       };
+
+          const graphqlQuery = {
+      'query': `{
+        items {
+          name
+          total_needed
+          total_received
+        }
+      }`,
+    };
 */
