@@ -1,23 +1,85 @@
+//jest does not required import statement
 const req = require("supertest");
-// const app = require("./../server/server.js");
-//jest do not required import statement
-
+const queries = require("./testQueries.js");
 const server = "http://localhost:3000";
-const graphServer = "http://localhost:4000";
 
 describe("Route integration", () => {
   describe("GET /", () => {
-    test("responds with status 200 and text/html content type", () => {
-      return req(server)
-        .get("/")
-        .expect("Content-Type", /text\/html/)
-        .expect(200);
+    test("responds with status 200 and text/html content type", async () => {
+      try {
+        const res = await req(server).get("/");
+        expect(res.type).toMatch(/text\/html/);
+        expect(res.statusCode).toEqual(200);
+      } catch (err) {
+        console.log(err);
+      }
     });
   });
 
-  describe("POST /api/login", () => {
-    describe("Given username and password", () => {
-      const graphqlQuery = {
+  describe("GET /api/graphql", () => {});
+
+  describe("POST /graphql", () => {
+    describe("Login query: sending the correct username and password", () => {
+      const graphqlQuery = queries.correctLogin;
+
+      test("Expect server to response with status 200 and a content-type of application/json", async () => {
+        try {
+          const res = await req(server).post("/graphql").send(graphqlQuery);
+          expect(res.statusCode).toEqual(200);
+          expect(res.headers["content-type"]).toMatch(/application\/json/);
+        } catch (err) {
+          console.log(err);
+        }
+      });
+      test("Expect server to response with an obj with properties first_name, last_name, email, chapter_id, and token", async () => {
+        const res = await req(server).post("/graphql").send(graphqlQuery);
+        expect(res.body.data.login).toHaveProperty("user");
+        expect(res.body.data.login).toHaveProperty("token");
+        expect(res.body.data.login.user).toHaveProperty("first_name");
+        expect(res.body.data.login.user).toHaveProperty("last_name");
+        expect(res.body.data.login.user).toHaveProperty("email");
+        expect(res.body.data.login.user).toHaveProperty("chapter_id");
+      });
+    });
+
+    describe("Login query: sending the wrong username and/or password", () => {
+      const wrongEmail = queries.wrongEmail;
+      const wrongPassword = queries.wrongPassword;
+      test("Wrong Email: Expect response to have status 404, and a property errors", async () => {
+        const res = await req(server).post("/graphql").send(wrongEmail);
+        expect(res.status).toEqual(404);
+        expect(res.body).toHaveProperty("errors");
+      });
+      test("Wrong Password: Expect response to have status 403, and a property errors", async () => {
+        const res = await req(server).post("/graphql").send(wrongPassword);
+        expect(res.status).toEqual(403);
+        expect(res.body).toHaveProperty("errors");
+      });
+    });
+
+    describe("Login query: sending the correct username and password", () => {
+
+    });
+  });
+});
+/*
+RootQuery
+item
+chapter
+user
+items
+chapters
+users
+
+Mutation
+addChapter
+addNeed
+updateItem
+signUp
+addUser
+*/
+/*
+     const graphqlQuery = {
         query: `{
               chapters{
                 name
@@ -25,20 +87,4 @@ describe("Route integration", () => {
               }
             }`,
       };
-
-      test("POST /graphql", () => {
-        return (
-          req(graphServer)
-            .post("/graphql")
-            .send(graphqlQuery)
-            .expect("Content-Type", /application\/json/)
-        );
-      });
-      //if wrong email, should get status 401, and a string 'User not found'
-      //if no input on email should get status 401, and a string 'User not found'
-      //if wrong password, should received status 400 and a string 'Incorrect Password'
-      //if correct username and password, should receive status 200 and {email, chapterId(num), firstName, lastName, and token}
-      //should specify JSON in the header
-    });
-  });
-});
+*/

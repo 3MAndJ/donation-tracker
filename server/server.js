@@ -62,8 +62,7 @@ app.use((err, req, res, next) => {
 
 const port = process.env.PORT;
 
-//Need to import app.listen because Jest global teardown need the return value of app.listen()
-// to close serer after all test is completed.
+//app.listen() will return an obj with close property which is used in globalTeardown.js to close down server after the test run
 module.exports = app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
