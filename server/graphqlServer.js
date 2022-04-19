@@ -15,7 +15,7 @@ const graphQLGeoMiddleWare = async (req, res, next) => {
   if (req.body.query?.split(' ')[1] === 'addChapter') {
     await chapterMiddleware.getGeocode(req, res, next);
     return next();
-  } 
+  }
   else return next();
 };
 
@@ -34,22 +34,5 @@ const graphQLServer = graphqlHTTP(async (request, response) => ({
     return err;
   }
 }));
-
-// app.use('/graphql', graphqlHTTP(async (request, response) => ({
-//   schema: schema,
-//   graphiql: true,
-//   context: {
-//     prisma,
-//     request,
-//     response
-//   },
-//   customFormatErrorFn: (err) => {
-//     if (response.statusCode === 200) response.status(500);
-//     err = locatedError(err);
-//     console.warn(err);
-//     return err;
-//   }
-// }))
-// );
 
 module.exports = { graphQLServer, graphQLGeoMiddleWare };
