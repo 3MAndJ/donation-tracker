@@ -1,4 +1,45 @@
 const queryStrs = {
+  chapters: `{
+              chapters{
+                name
+                id
+              }
+            }`,
+  user: `query user ($email: String!) {
+    user(email: $email) {
+      first_name,
+      last_name,
+      email,
+    }
+  }`,
+
+  item: `query item ($id: Int!) {
+    item (id: $id){
+        id,
+        name,
+        total_needed,
+        total_received,
+        category
+    }
+  }`,
+
+  chapter: `query chapter ($id: Int!) {
+          chapter (id: $id) {
+            items {
+              id,
+              name,
+              total_needed,
+              total_received,
+              category
+            }
+          }
+        }`,
+  users: `{
+    users {
+      first_name
+      last_name
+    }
+  }`,
   items: `{
         items {
           name
