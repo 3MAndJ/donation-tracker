@@ -22,7 +22,7 @@ describe('Route integration', () => {
         const query = getQuery(queryStrs.items);
         res = await req(server).get('/graphql').send(query);
       });
-      
+
       test('Expect response to have status 200 and a content-type of application/json', () => {
         expect(res.status).toEqual(200);
         expect(res.headers['content-type']).toMatch(/application\/json/);
@@ -63,81 +63,6 @@ describe('Route integration', () => {
       });
     });
 
-    describe('item', () => {
-      let res;
-
-      beforeAll(async () => {
-        const variables = {
-          id: 1,
-        };
-        const query = getQuery(queryStrs.item, variables);
-        res = await req(server).get('/graphql').send(query);
-      });
-
-      test('Expect response to have status 200 and a content-type of application/json', () => {
-        expect(res.status).toEqual(200);
-        expect(res.headers['content-type']).toMatch(/application\/json/);
-      });
-
-      test('res.body.data.item should be an obj with properties id, name, total_needed, total_received, and category', () => {
-        expect(typeof res.body.data.item).toEqual('object');
-        expect(res.body.data.item).toHaveProperty('id');
-        expect(res.body.data.item).toHaveProperty('name');
-        expect(res.body.data.item).toHaveProperty('total_needed');
-        expect(res.body.data.item).toHaveProperty('total_received');
-        expect(res.body.data.item).toHaveProperty('category');
-      });
-    });
-
-    describe('chapter', () => {
-      let res;
-
-      beforeAll(async () => {
-        const variables = {
-          id: 4,
-        };
-        const query = getQuery(queryStrs.chapter, variables);
-        res = await req(server).get('/graphql').send(query);
-      });
-
-      test('Expect response to have status 200 and a content-type of application/json', () => {
-        expect(res.status).toEqual(200);
-        expect(res.headers['content-type']).toMatch(/application\/json/);
-      });
-
-      test('res.body.data.chapter should be an object and res.body.data.items should be an array', () => {
-        expect(typeof res.body.data.chapter).toEqual('object');
-        expect(Array.isArray(res.body.data.chapter.items)).toEqual(true);
-      });
-    });
-
-    describe('user', () => {
-      let res;
-
-      beforeAll(async () => {
-        const variables = {
-          email: 'milos@gmail.com',
-        };
-        const query = getQuery(queryStrs.user, variables);
-        res = await req(server).get('/graphql').send(query);
-      });
-
-      test('Expect response to have status 200 and a content-type of application/json', () => {
-        expect(res.status).toEqual(200);
-        expect(res.headers['content-type']).toMatch(/application\/json/);
-      });
-
-      test('res.body.user should be an object ', () => {
-        expect(typeof res.body.data.user).toEqual('object');
-      });
-
-      test('res.body.user should have properties first_name, last_name, and email', () => {
-        expect(res.body.data.user).toHaveProperty('first_name');
-        expect(res.body.data.user).toHaveProperty('last_name');
-        expect(res.body.data.user).toHaveProperty('email');
-      });
-    });
-
     describe('chapters', () => {
       let res;
 
@@ -158,6 +83,146 @@ describe('Route integration', () => {
         expect(Array.isArray(res.body.data.chapters)).toEqual(true);
         expect(typeof res.body.data.chapters[0]).toEqual('object');
         expect(Array.isArray(res.body.data.chapters[0])).toEqual(false);
+      });
+    });
+
+    describe('item', () => {
+      describe('Sending query with id that does not exist in the database', () => {
+        let res;
+
+        beforeAll(async () => {
+          const query = getQuery(queryStrs.item, { id: 2 });
+          res = await req(server).get('/graphql').send(query);
+        });
+
+        test('Expect property errors and status 404', async () => {
+          expect(res.status).toEqual(404);
+          expect(res.body).toHaveProperty('errors');
+        });
+
+        test('Expect res.body.errors[0].message to be "Error with item query:...', async () => {
+          expect(res.body.errors[0].message).toMatch(/Error with item query:/);
+        });
+      });
+
+      describe('Sending query with id that exist in the database', () => {
+        let res;
+
+        beforeAll(async () => {
+          const variables = {
+            id: 1,
+          };
+          const query = getQuery(queryStrs.item, variables);
+          res = await req(server).get('/graphql').send(query);
+        });
+
+        test('Expect response to have status 200 and a content-type of application/json', () => {
+          expect(res.status).toEqual(200);
+          expect(res.headers['content-type']).toMatch(/application\/json/);
+        });
+
+        test('Expect response to not have property errors', () => {
+          expect(res.body.errors).toBeUndefined();
+        });
+
+        test('res.body.data.item should be an obj with properties id, name, total_needed, total_received, and category', () => {
+          expect(typeof res.body.data.item).toEqual('object');
+          expect(res.body.data.item).toHaveProperty('id');
+          expect(res.body.data.item).toHaveProperty('name');
+          expect(res.body.data.item).toHaveProperty('total_needed');
+          expect(res.body.data.item).toHaveProperty('total_received');
+          expect(res.body.data.item).toHaveProperty('category');
+        });
+      });
+    });
+
+    describe('chapter', () => {
+      describe('Sending query with id that does not exist in the database', () => {
+        let res;
+
+        beforeAll(async () => {
+          const query = getQuery(queryStrs.chapter, { id: 1 });
+          res = await req(server).get('/graphql').send(query);
+        });
+
+        test('Expect property errors and status 404', async () => {
+          expect(res.status).toEqual(404);
+          expect(res.body).toHaveProperty('errors');
+        });
+
+        test('Expect res.body.errors[0].message to be "Error with chapter query:...', async () => {
+          expect(res.body.errors[0].message).toMatch(
+            /Error with chapter query:/
+          );
+        });
+      });
+
+      describe('Sending query with id that exist in the database', () => {
+        let res;
+        beforeAll(async () => {
+          const variables = {
+            id: 4,
+          };
+          const query = getQuery(queryStrs.chapter, variables);
+          res = await req(server).get('/graphql').send(query);
+        });
+
+        test('Expect response to have status 200 and a content-type of application/json', () => {
+          expect(res.status).toEqual(200);
+          expect(res.headers['content-type']).toMatch(/application\/json/);
+        });
+
+        test('res.body.data.chapter should be an object and res.body.data.items should be an array', () => {
+          expect(typeof res.body.data.chapter).toEqual('object');
+          expect(Array.isArray(res.body.data.chapter.items)).toEqual(true);
+        });
+      });
+    });
+
+    describe('user', () => {
+      describe('Sending query with email that does not exist in the database', () => {
+        let res;
+
+        beforeAll(async () => {
+          const query = getQuery(queryStrs.user, { email: 'no' });
+          res = await req(server).get('/graphql').send(query);
+        });
+
+        test('Expect property errors and status 404', async () => {
+          expect(res.status).toEqual(404);
+          expect(res.body).toHaveProperty('errors');
+        });
+
+        test('Expect res.body.errors[0].message to be "Error with user query:...', async () => {
+          expect(res.body.errors[0].message).toMatch(/Error with user query:/);
+        });
+      });
+
+      describe('Sending query with id that exist in the database', () => {
+        let res;
+
+        beforeAll(async () => {
+          const variables = {
+            email: 'milos@gmail.com',
+          };
+          const query = getQuery(queryStrs.user, variables);
+          res = await req(server).get('/graphql').send(query);
+        });
+
+        test('Expect response to have status 200 and a content-type of application/json', () => {
+          expect(res.status).toEqual(200);
+          expect(res.headers['content-type']).toMatch(/application\/json/);
+        });
+
+        test('res.body.user should be an object ', () => {
+          expect(typeof res.body.data.user).toEqual('object');
+        });
+
+        test('res.body.user should have properties first_name, last_name, and email', () => {
+          expect(res.body.data.user).toHaveProperty('first_name');
+          expect(res.body.data.user).toHaveProperty('last_name');
+          expect(res.body.data.user).toHaveProperty('email');
+        });
       });
     });
   });

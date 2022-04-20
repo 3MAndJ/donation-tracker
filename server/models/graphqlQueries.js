@@ -77,7 +77,7 @@ const RootQuery = new GraphQLObjectType({
             if (!res.rows[0]) {
               context.response.status(404);
               throw new GraphQLError(
-                `Error with users query: User with email ${args.email} not found.`
+                `Error with user query: User with email ${args.email} not found.`
               );
             }
             return res.rows[0];
