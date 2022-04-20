@@ -23,6 +23,7 @@
     "url": "https://github.com/CGRS-labs/donation-tracker/issues"
   },
   "jest": {
+    "verbose": true,
     "globalSetup": "./jest-setup.js",
     "globalTeardown": "./jest-teardown.js",
     "testEnvironment": "jest-environment-jsdom",

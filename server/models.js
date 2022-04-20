@@ -7,14 +7,14 @@ require('dotenv').config();
 
 const { Pool } = require('pg');
 
-const PG_URI = process.env.PG_URI;
-
+// const PG_URI = process.env.PG_URI;
+const TEST_DATABASE = process.env.TEST_DATABASE;
 const pool = new Pool({
-  connectionString: PG_URI,
+  connectionString: TEST_DATABASE,
   max: 10,
   ssl: {
     rejectUnauthorized: false,
-  }
+  },
 });
 
 module.exports = {

@@ -4,17 +4,22 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const {ItemType, ChapterType, UserType, AuthPayload} = require ('./graphqlTypes.js');
+const {
+  ItemType,
+  ChapterType,
+  UserType,
+  AuthPayload,
+} = require('./graphqlTypes.js');
 
 const {
-    GraphQLError,
-    GraphQLObjectType,
-    GraphQLString,
-    GraphQLSchema,
-    GraphQLInt,
-    GraphQLFloat,
-    GraphQLList,
-    GraphQLNonNull
+  GraphQLError,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLSchema,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLList,
+  GraphQLNonNull,
 } = graphql;
 
 const Mutations = new GraphQLObjectType({
@@ -31,7 +36,7 @@ const Mutations = new GraphQLObjectType({
         phone: { type: new GraphQLNonNull(GraphQLString) },
         email: { type: new GraphQLNonNull(GraphQLString) },
         longitude: { type: new GraphQLNonNull(GraphQLFloat) },
-        latitude: { type: new GraphQLNonNull(GraphQLFloat) }
+        latitude: { type: new GraphQLNonNull(GraphQLFloat) },
       },
       resolve(parent, args) {
         return db
@@ -52,7 +57,7 @@ const Mutations = new GraphQLObjectType({
           .then((res) => {
             return res.rows[0];
           })
-          .catch(err => err);
+          .catch((err) => err);
       },
     },
     addNeed: {
@@ -61,7 +66,7 @@ const Mutations = new GraphQLObjectType({
         name: { type: new GraphQLNonNull(GraphQLString) },
         category: { type: new GraphQLNonNull(GraphQLString) },
         total_needed: { type: new GraphQLNonNull(GraphQLInt) },
-        total_received: { type: new GraphQLNonNull(GraphQLInt) }
+        total_received: { type: new GraphQLNonNull(GraphQLInt) },
       },
       resolve(parent, args) {
         return db
@@ -72,7 +77,7 @@ const Mutations = new GraphQLObjectType({
           .then((res) => {
             return res.rows[0];
           })
-          .catch(err => err);
+          .catch((err) => err);
       },
     },
     updateItem: {
@@ -80,7 +85,7 @@ const Mutations = new GraphQLObjectType({
       args: {
         item_id: { type: new GraphQLNonNull(GraphQLInt) },
         total_received: { type: new GraphQLNonNull(GraphQLInt) },
-        chapter_id: { type: GraphQLInt }
+        chapter_id: { type: GraphQLInt },
       },
       async resolve(parent, args, context) {
         try {
@@ -96,33 +101,32 @@ const Mutations = new GraphQLObjectType({
               },
             },
             where: {
-              'chapter_id_item_id': {
+              chapter_id_item_id: {
                 chapter_id: args.chapter_id,
-                item_id: args.item_id
-              }
+                item_id: args.item_id,
+              },
             },
             include: {
-              chapters: true
-            }
+              chapters: true,
+            },
           });
 
           const item = await context.prisma.items.update({
             data: {
               total_received: {
                 increment: args.total_received,
-              }
+              },
             },
             where: {
               id: args.item_id,
-            }
+            },
           });
 
           return chapterItem.chapters;
-        }
-        catch (err) {
+        } catch (err) {
           return err;
         }
-      }
+      },
     },
     signUp: {
       type: AuthPayload,
@@ -209,14 +213,12 @@ const Mutations = new GraphQLObjectType({
             token,
             user,
           };
-        }
-        catch (error){
+        } catch (error) {
           return error;
         }
-      }
+      },
     },
   },
 });
-
 
 module.exports = Mutations;

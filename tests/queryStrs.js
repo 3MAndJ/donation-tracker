@@ -1,4 +1,11 @@
 const queryStrs = {
+  items: `{
+        items {
+          name
+          total_needed
+          total_received
+        }
+      }`,
   login: `mutation login ($email: String!, $password: String!) {
       login (email: $email, password: $password) {
         user {

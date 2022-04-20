@@ -6,7 +6,8 @@ generator client {
 datasource db {
   provider = "postgresql"
   // url      = env("PG_URI")
-  url      = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
+  url     = env("TEST_DATABASE")
 }
 
 model chapter_items {
