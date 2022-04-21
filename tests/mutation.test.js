@@ -53,24 +53,60 @@ describe('Mutation Queries: /graphql', () => {
   });
 
   describe('addUser query', () => {
-    // beforeEach(async () => {
-    //   await db.query(`DELETE FROM users WHERE users.email = 'max@gmail.com';`);
-    // });
+    describe('Sending the correct query', () => {
+      let res;
+      beforeAll(async () => {
+        const variables = {
+          first_name: 'Max',
+          last_name: 'Nudol',
+          email: 'max@gmail.com',
+          password: 'max',
+          chapter_id: 3,
+        };
+        const query = getQuery(queryStrs.addUser, variables);
+        res = await req(server).post('/graphql').send(query);
+      });
 
-    test('Should get something back', async () => {
-      const variables = {
-        first_name: 'Max',
-        last_name: 'Nudol',
-        email: 'max@gmail.com',
-        password: 'max',
-        chapter_id: 3,
-      };
-      // const query = getQuery(queryStrs.addUser, variables);
-      // const res = await req(server).post('/graphql').send(query);
-      // await db.query(
-      //   `DELETE FROM users WHERE users.email = 'max@gmail.com';`
-      // );
-      // console.log(res);
+      test('Expect res to have status 200 and res.body to not have property errors', async () => {
+        expect(res.status).toEqual(200);
+        expect(res.body).not.toHaveProperty('errors');
+      });
+
+      test('res.body.data should havve property addUser and addUser should have property first_name', () => {
+        expect(res.body.data).toHaveProperty('addUser');
+        expect(res.body.data.addUser).toHaveProperty('first_name');
+      });
+
+      describe('Sending the incorrect variables', () => {
+        test('Should response with error and status 500 when trying to signup with existing email', async () => {
+          const variables = {
+            first_name: 'Max',
+            last_name: 'Nudol',
+            email: 'max@gmail.com',
+            password: 'max',
+            chapter_id: 3,
+          };
+          const query = getQuery(queryStrs.addUser, variables);
+          const res = await req(server).post('/graphql').send(query);
+          expect(res.status).toEqual(500);
+          expect(res.body).toHaveProperty('errors');
+          await db.query('DELETE FROM users WHERE users.email = $1;', [
+            'max@gmail.com',
+          ]);
+        });
+
+        test('Should return an error if one of the field is blank', async () => {
+          const variables = {
+            first_name: 'Max',
+            last_name: 'Nudol',
+            email: 'max@gmail.com',
+            password: 'max',
+            chapter_id: '',
+          };
+          const query = getQuery(queryStrs.addUser, variables);
+          const res = await req(server).post('/graphql').send(query);
+        });
+      });
     });
   });
 });
