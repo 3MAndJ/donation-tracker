@@ -46,12 +46,6 @@ const ResponsiveAppBar = () => {
       showPrivate: true,
     },
     {
-      text: 'Sign In',
-      link: '/signin',
-      showPublic: true,
-      showPrivate: false,
-    },
-    {
       text: 'Chapters',
       link: '/chapters',
       showPublic: true,
