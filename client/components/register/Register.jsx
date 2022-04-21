@@ -95,10 +95,6 @@ export default function Register() {
       .catch((error) => console.log(error));
   };
 
-  const google = () => {
-    window.location.href = "http://localhost:3000/auth/google" 
-  };
-
   return (
     <Container component="div" maxWidth="xs">
       <Box
@@ -206,10 +202,6 @@ export default function Register() {
           </Button>
         </Box>
       </Box>
-      <Divider>OR</Divider>
-      <Button fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={google}>
-        Register with Google
-      </Button>
     </Container>
   );
 }
