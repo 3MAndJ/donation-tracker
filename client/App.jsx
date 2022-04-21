@@ -20,6 +20,7 @@ import useAuth from './hooks/useAuth';
 import PrivateRoute from './components/layout/PrivateRoute';
 
 import './styles/styles.css';
+import Register from './components/register/Register';
 
 const App = () => {
   
@@ -33,6 +34,7 @@ const App = () => {
             <Route exact path="/" element={<Homepage />} />
             <Route exact path={"/chapters"} element={<AllChaptersPage />} />
             <Route exact path="/signin" element={<Login />} />
+            <Route exact path="/register" element={<Register />} />
             <Route
               exact
               path="/signup"

@@ -12,6 +12,7 @@ import Container from '@mui/material/Container';
 
 import useToken from '../hooks/useToken';
 import { UserContext } from '../hooks/userContext';
+import { Divider } from '@mui/material';
 
 export default function Login() {
   const [inputs, setInputs] = useState({
@@ -70,6 +71,10 @@ export default function Login() {
       .catch(err => console.log(err));
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:3000/auth/google';
+  };
+
   return (
     <Container component="div" maxWidth="xs">
       <Box
@@ -121,6 +126,10 @@ export default function Login() {
           </Button>
         </Box>
       </Box>
+      <Divider>OR</Divider>
+      <Button fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={handleGoogleLogin}>
+        Signin with Google
+      </Button>
     </Container>
   );
 }
