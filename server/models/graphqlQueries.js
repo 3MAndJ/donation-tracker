@@ -1,8 +1,5 @@
 const graphql = require('graphql');
 const db = require('../models.js');
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const {ItemType, ChapterType, UserType, MessageType, VisitorsType, ChatType} = require ('./graphqlTypes.js');
 
@@ -10,11 +7,8 @@ const {
   GraphQLError,
   GraphQLObjectType,
   GraphQLString,
-  GraphQLSchema,
   GraphQLInt,
-  GraphQLFloat,
   GraphQLList,
-  GraphQLNonNull
 } = graphql;
 
 const RootQuery = new GraphQLObjectType({

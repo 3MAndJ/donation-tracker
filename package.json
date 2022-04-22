@@ -54,6 +54,7 @@
     "express": "^4.17.3",
     "express-graphql": "^0.12.0",
     "graphql": "^15.8.0",
+    "graphql-subscriptions": "^2.0.0",
     "graphql-ws": "^5.7.0",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.3",

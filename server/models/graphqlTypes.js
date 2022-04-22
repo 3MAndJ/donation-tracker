@@ -20,11 +20,12 @@ const {
 const MessageType = new GraphQLObjectType({
   name: 'Message',
   fields: () => ({
-    id: {type: GraphQLInt},
-    message: {type: GraphQLString},
-    sent_by: {type: GraphQLString},
-    received_by: {type: GraphQLString},
-    created_at: {type: GraphQLString},
+    id: { type: GraphQLInt },
+    message: { type: GraphQLString },
+    sent_by: { type: GraphQLString },
+    received_by: { type: GraphQLString },
+    created_at: { type: GraphQLString },
+    chats: {type: ChatType}
   })
 });
 
@@ -44,10 +45,10 @@ const ChatType = new GraphQLObjectType({
 const VisitorsType = new GraphQLObjectType({
   name: 'Visitor',
   fields: () => ({
-    id: {type: GraphQLString},
-    email: {type: GraphQLString},
-    first_name: {type: GraphQLString},
-    chats: {type: new GraphQLList(ChatType)}
+    id: { type: GraphQLString },
+    email: { type: GraphQLString },
+    first_name: { type: GraphQLString },
+    chats: { type: new GraphQLList(ChatType) }
   })
 });
 
@@ -61,14 +62,14 @@ const AuthPayload = new GraphQLObjectType({
 
 const UserType = new GraphQLObjectType({
   name: 'User',
-  fields: ( ) => ({
-    first_name: { type: GraphQLString},
+  fields: () => ({
+    first_name: { type: GraphQLString },
     last_name: { type: GraphQLString },
     email: { type: GraphQLString },
     chapter_id: { type: GraphQLInt },
     chapter: {
       type: ChapterType,
-      resolve(user, args){
+      resolve(user, args) {
         return db.query(`SELECT *
           FROM chapters
           WHERE id = $1;`, [user.chapter_id])
@@ -81,7 +82,7 @@ const UserType = new GraphQLObjectType({
 
 const ChapterType = new GraphQLObjectType({
   name: 'Chapter',
-  fields: ( ) => ({
+  fields: () => ({
     id: { type: GraphQLInt },
     name: { type: GraphQLString },
     street: { type: GraphQLString },
@@ -91,10 +92,10 @@ const ChapterType = new GraphQLObjectType({
     phone: { type: GraphQLString },
     email: { type: GraphQLString },
     longitude: { type: GraphQLFloat },
-    latitude: { type: GraphQLFloat},
+    latitude: { type: GraphQLFloat },
     items: {
       type: new GraphQLList(ItemType),
-      async resolve(chapter, args, context ){
+      async resolve(chapter, args, context) {
 
         return db.query(`SELECT i.id as id, i.name as name, i.category, ci.total_received, i.total_needed
           FROM chapter_items ci
@@ -119,11 +120,11 @@ const ChapterType = new GraphQLObjectType({
 
 const ItemType = new GraphQLObjectType({
   name: 'Item',
-  fields: ( ) => ({
+  fields: () => ({
     id: { type: GraphQLInt },
     name: { type: GraphQLString },
     total_needed: { type: GraphQLInt },
-    total_received: { type: GraphQLInt},
+    total_received: { type: GraphQLInt },
     category: { type: GraphQLString },
   })
 });

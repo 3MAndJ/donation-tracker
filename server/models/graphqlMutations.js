@@ -7,6 +7,7 @@ require('dotenv').config();
 const {ItemType, ChapterType, UserType, AuthPayload, VisitorsType, ChatType, MessageType} = require ('./graphqlTypes.js');
 const { prisma } = require('@prisma/client');
 const { user } = require('pg/lib/defaults');
+const pubsub = require('./pubsub.js');
 
 const {
     GraphQLError,
@@ -84,9 +85,11 @@ const Mutations = new GraphQLObjectType({
             received_by: true,
             sent_by: true,
             message: true,
+            chats: true
           }
         });
 
+        pubsub.publish('NEW_MESSAGE', { newMessage: message});
         return message;
       }
     },
