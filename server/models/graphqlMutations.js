@@ -4,7 +4,9 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const {ItemType, ChapterType, UserType, AuthPayload} = require ('./graphqlTypes.js');
+const {ItemType, ChapterType, UserType, AuthPayload, VisitorsType, ChatType, MessageType} = require ('./graphqlTypes.js');
+const { prisma } = require('@prisma/client');
+const { user } = require('pg/lib/defaults');
 
 const {
     GraphQLError,
@@ -20,6 +22,74 @@ const {
 const Mutations = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
+    addVisitor: {
+      type: VisitorsType,
+      args: {
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        first_name: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args, context) {
+        const visitor = await context.prisma.visitors.create({
+          data: {
+            email: args.email,
+            first_name: args.first_name
+          },
+          select: {
+            id: true,
+            email: true,
+            first_name: true,
+          }
+        });
+
+        return visitor;
+      }
+    },
+    createChat: {
+      type: ChatType,
+      args: {
+        user: { type: new GraphQLNonNull(GraphQLString)},
+        visitor: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      async resolve(parent, args, context) {
+        const chat = await context.prisma.chats.create({
+          data: {
+            chapter_user: args.user,
+            visitor: args.visitor
+          },
+          select: {
+            id: true,
+            users: true,
+            visitors: true
+          }
+        });
+        return chat;
+      }
+    },
+    createMessage: {
+      type: MessageType,
+      args: {
+        message: { type: new GraphQLNonNull(GraphQLString) },
+        sent_by: { type: new GraphQLNonNull(GraphQLString) },
+        received_by: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args, context) {
+        const message = await context.prisma.messages.create({
+          data: {
+            message: args.message,
+            sent_by: args.sent_by,
+            received_by: args.received_by,
+          },
+          select: {
+            created_at: true,
+            received_by: true,
+            sent_by: true,
+            message: true,
+          }
+        });
+
+        return message;
+      }
+    },
     addChapter: {
       type: ChapterType,
       args: {
