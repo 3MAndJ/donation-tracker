@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const {ItemType, ChapterType, UserType, AuthPayload} = require ('./graphqlTypes.js');
+const {ItemType, ChapterType, UserType, MessageType, VisitorsType, ChatType} = require ('./graphqlTypes.js');
 
 const {
   GraphQLError,
@@ -20,6 +20,42 @@ const {
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
+    chat: {
+      type: ChatType,
+      args: {
+        id: {type: GraphQLInt}
+      },
+      async resolve(parent, args, context) {
+        const chat = await context.prisma.chats.findUnique({
+          where: { id: args.id},
+          include: {
+            users: true,
+            visitors: true,
+            messages: true,
+          }
+        }
+        );
+        
+        return chat;
+      }
+    },
+    visitor: {
+      type: VisitorsType,
+      args: {
+        id: { type: GraphQLString }
+      },
+      async resolve(parent, args, context) {
+        const visitor = await context.prisma.visitors.findUnique({
+          where: { id: args.id },
+          include: {
+            chats: true,
+          }
+        }
+        );
+
+        return visitor;
+      }
+    },
     item: {
       type: ItemType,
       args: {
