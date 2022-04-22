@@ -28,6 +28,7 @@ import {
 
 import './styles/styles.css';
 import Register from './components/register/Register';
+import Chat from './components/chat/Chat';
 
 const client = new ApolloClient({
   uri: '/graphql',
@@ -89,6 +90,7 @@ const App = () => {
                 }
               />
             </Routes>
+            <Chat />
           </Layout>
         </UserContext.Provider>
       </ApolloProvider>
