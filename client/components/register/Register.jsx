@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -10,9 +10,11 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { InputLabel, Select } from "@mui/material";
-import axios from 'axios';
+import { useQuery, useMutation } from "@apollo/client";
+import queries from "../../models/queries";
+import axios from "axios";
 
-import { UserContext } from '../../hooks/userContext';
+import { UserContext } from "../../hooks/userContext";
 
 export default function Register() {
   const [inputs, setInputs] = useState({
@@ -25,6 +27,10 @@ export default function Register() {
 
   const { setUser } = useContext(UserContext);
   const [chapters, setChapters] = useState([]);
+  const { data, loading, error } = useQuery(queries.chapters);
+  const [addUser, result] = useMutation(queries.addUser);
+
+  const mounted = useRef(true);
 
   const handleChange = (event) => {
     const name = event.target.name;
@@ -32,31 +38,39 @@ export default function Register() {
     setInputs((values) => ({ ...values, [name]: value }));
   };
 
+  // Get list of chapter ids
   useEffect(async () => {
-    const headers = {
-      "content-type": "application/json",
-    };
+    if (loading) return <div>Loading...</div>;
+    mounted.current = true;
+    if (mounted.current) setChapters(data.chapters);
+    return () => (mounted.current = false);
+  }, [loading]);
 
-    const graphqlQuery = {
-      query: `{
-        chapters{
-          name
-          id
-        }
-      }`,
-    };
+  // useEffect(async () => {
+  //   const headers = {
+  //     "content-type": "application/json",
+  //   };
 
-    const options = {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(graphqlQuery),
-    };
+  //   const graphqlQuery = {
+  //     query: `{
+  //       chapters{
+  //         name
+  //         id
+  //       }
+  //     }`,
+  //   };
 
-    fetch("/graphql", options)
-      .then((res) => res.json())
-      .then((data) => setChapters(data.data.chapters))
-      .catch((error) => console.log(error));
-  }, []);
+  //   const options = {
+  //     method: "POST",
+  //     headers: headers,
+  //     body: JSON.stringify(graphqlQuery),
+  //   };
+
+  //   fetch("/graphql", options)
+  //     .then((res) => res.json())
+  //     .then((data) => setChapters(data.data.chapters))
+  //     .catch((error) => console.log(error));
+  // }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
