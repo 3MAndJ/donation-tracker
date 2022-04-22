@@ -27,6 +27,7 @@ import {
 } from '@apollo/client';
 
 import './styles/styles.css';
+import Register from './components/register/Register';
 import Chat from './components/chat/Chat';
 
 const client = new ApolloClient({
@@ -49,6 +50,7 @@ const App = () => {
               <Route exact path={'/bank'} element={<BankInfo />} />
               <Route exact path={"/chapters"} element={<AllChaptersPage />} />
               <Route exact path="/signin" element={<Login />} />
+              <Route exact path="/register" element={<Register />} />
               <Route
                 exact
                 path="/signup"

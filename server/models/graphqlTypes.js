@@ -17,6 +17,39 @@ const {
   GraphQLNonNull
 } = graphql;
 
+const MessageType = new GraphQLObjectType({
+  name: 'Message',
+  fields: () => ({
+    id: {type: GraphQLInt},
+    message: {type: GraphQLString},
+    sent_by: {type: GraphQLString},
+    received_by: {type: GraphQLString},
+    created_at: {type: GraphQLString},
+  })
+});
+
+const ChatType = new GraphQLObjectType({
+  name: 'Chat',
+  fields: () => ({
+    id: { type: GraphQLInt },
+    users: { type: UserType },
+    visitors: { type: VisitorsType },
+    messages: {
+      type: new GraphQLList(MessageType)
+    }
+  }),
+});
+
+
+const VisitorsType = new GraphQLObjectType({
+  name: 'Visitor',
+  fields: () => ({
+    id: {type: GraphQLString},
+    email: {type: GraphQLString},
+    first_name: {type: GraphQLString},
+    chats: {type: new GraphQLList(ChatType)}
+  })
+});
 
 const AuthPayload = new GraphQLObjectType({
   name: 'AuthPayload',
@@ -100,4 +133,7 @@ module.exports = {
   ChapterType,
   UserType,
   AuthPayload,
+  ChatType,
+  VisitorsType,
+  MessageType
 };
