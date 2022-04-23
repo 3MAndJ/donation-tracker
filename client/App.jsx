@@ -36,7 +36,7 @@ import Chat from './components/chat/Chat';
 import { WebSocketLink } from 'apollo-link-ws';
 
 const httpLink = new HttpLink({
-  uri: 'http://localhost:3000/graphql'
+  uri: 'http://localhost:4000/graphql'
 });
 
 const wsLink = new GraphQLWsLink(createClient({
