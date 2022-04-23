@@ -19,7 +19,6 @@ const Subscription = new GraphQLObjectType({
       subscribe: withFilter(
         () => pubsub.asyncIterator(['NEW_MESSAGE']),
         (payload, variables) => {
-          console.log('NewMessage')
           return payload.newMessage.id === variables.id;
         }
       )

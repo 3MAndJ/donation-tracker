@@ -56,7 +56,6 @@ export default function Chat() {
     variables: {
       chatId: 2,
     },
-    client: client
   });
   const  [postMessage, result] = useMutation(queries.postMessage);
   const [addVisitor, visitor] = useMutation(queries.addVisitor);
@@ -90,7 +89,7 @@ export default function Chat() {
         console.log(subscriptionData)
         return Object.assign({}, prev, subscriptionData.data.newMessage);
       },
-      client: client
+      
     });
   },[]);
   // const [mockMessages, setMockMessages] = auseState({
@@ -177,11 +176,10 @@ export default function Chat() {
     if (userMessage !== '') {
       postMessage({
         variables: { message: userMessage, 
-          sentBy: chatUser.id || chatUser.email, 
+          sentBy: chatUser.name,
           receivedBy: chatUser.id ? mockMessages.chat.users.email : mockMessages.data.chat.visitors.id, 
           chatId: 2 
         },
-        client: client
       })
         .then(() => {
           client.refetchQueries({
@@ -230,7 +228,6 @@ export default function Chat() {
           email: guestInput.email,
           firstName: guestInput.name,
         },
-        client: client
       });
     }
   };
@@ -257,7 +254,6 @@ export default function Chat() {
             {mockMessages.chat.messages.map((messageObject, index) => (
               <p key={index} className="chatMessage">
                 <b>{messageObject.sent_by}</b>: {messageObject.message}
-                {console.log(messageObject)}
               </p>
             ))}
           </div>
