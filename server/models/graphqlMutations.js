@@ -98,6 +98,7 @@ const Mutations = new GraphQLObjectType({
           }
         });
 
+        message.chats.messages = message.chats.messages.sort((a, b) => b.created_at - a.created_at);
         pubsub.publish('NEW_MESSAGE', { newMessage: message.chats});
         return message;
       }

@@ -11,87 +11,54 @@ import {
   useMutation,
   gql,
   useQuery,
+  split,
+  HttpLink
 } from '@apollo/client';
+import queries from '../../models/queries';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { createClient } from 'graphql-ws';
+import { getMainDefinition } from '@apollo/client/utilities';
 
 
-const POST_MESSAGE = gql`
-  mutation CreateMessage($message: String!, $sentBy: String!, $receivedBy: String!, $chatId: Int!) {
-  createMessage(message: $message, sent_by: $sentBy, received_by: $receivedBy, chat_id: $chatId) {
-    chats {
-      users {
-        first_name
-      }
-      visitors {
-        first_name
-      }
-      messages {
-        id
-        message
-        sent_by
-        received_by
-        created_at
-      }
-    }
-  }
-}`;
+const wsLink = new GraphQLWsLink(createClient({
+  url: 'ws://localhost:4000/graphql',
+}));
 
-const GET_CHATS = gql`
-  query Chat($chatId: Int) {
-  chat(id: $chatId) {
-    id
-    users {
-      first_name
-      email
-    }
-    visitors {
-      id
-      email
-      first_name
-    }
-    messages {
-      id
-      message
-      sent_by
-      received_by
-      created_at
-    }
-  }
-}`;
+const httpLink = new HttpLink({
+  uri: 'http://localhost:4000/graphql'
+});
 
-const GET_MESSAGES = gql`
-  subscription NewMessage($id: Int!) {
-  newMessage(id: $id) {
-    id
-    messages {
-      id
-      message
-      sent_by
-      received_by
-      created_at
-    }
-    users {
-      first_name
-      email
-      chapter_id
-    }
-    visitors {
-      id
-      email
-      first_name
-    }
-  }
-}
-`;
+
+// The split function takes three parameters:
+//
+// * A function that's called for each operation to execute
+// * The Link to use for an operation if the function returns a "truthy" value
+// * The Link to use for an operation if the function returns a "falsy" value
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink,
+);
+
+const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache()
+});
 
 export default function Chat() {
-  const { subscribeToMore, data, loading } = useQuery(GET_CHATS, {
+  const { subscribeToMore, data, loading } = useQuery(queries.getChats, {
     variables: {
       chatId: 2,
-    }
+    },
   });
-  // if (!data) {
-  //   return null;
-  // }
+  const  [postMessage, result] = useMutation(queries.postMessage);
+  const [addVisitor, visitor] = useMutation(queries.addVisitor);
 
   const {user} = useContext(UserContext);
   const [chatActive, setChatActive] = useState(false);
@@ -112,12 +79,17 @@ export default function Chat() {
 /* Subscribing to the GET_MESSAGES query and updating the query with the new data. */
   useEffect(() => {
     subscribeToMore({
-      document: GET_MESSAGES,
+      document: queries.getMessages,
       variables: { id: 2 },
       updateQuery: (prev, { subscriptionData }) => {
+        console.log('In subscribetomore')
         if (!subscriptionData.data.newMessage) return prev;
+        console.log('Subscription Updated')
+        console.log(prev)
+        console.log(subscriptionData)
         return Object.assign({}, prev, subscriptionData.data.newMessage);
-      }
+      },
+      
     });
   },[]);
   // const [mockMessages, setMockMessages] = auseState({
@@ -184,8 +156,9 @@ export default function Chat() {
     if (chatUser.name && chatActive) {
       userInput.classList.add('active');
       chatMessages.classList.add('active');
+      chatButton.style.display = 'block';
     }
-    if (!chatActive) chatButton.style.display = 'none';
+    if (!chatActive && user) chatButton.style.display = 'none';
   }, [chatUser]);
 
   useEffect(() => {
@@ -201,35 +174,71 @@ export default function Chat() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (userMessage !== '') {
-      const newMessages = [
-        {
-          created_at: 'test',
-          received_by: 'test',
-          sent_by: chatUser.email,
-          message: userMessage,
+      postMessage({
+        variables: { message: userMessage, 
+          sentBy: chatUser.name,
+          receivedBy: chatUser.id ? mockMessages.chat.users.email : mockMessages.chat.visitors.id, 
+          chatId: 2 
         },
-        ...mockMessages.data.chat.messages,
-      ];
+      })
+        .then(() => {
+          client.refetchQueries({
+            include: [queries.getChats]
+          })
+        })
 
-      setMockMessages({
-        data: {
-          chat: {
-            ...mockMessages.data.chat,
-            messages: newMessages,
-          },
-        },
-      });
+      // const newMessages = [
+      //   {
+      //     created_at: 'test',
+      //     received_by: 'test',
+      //     sent_by: chatUser.email,
+      //     message: userMessage,
+      //   },
+      //   ...mockMessages.data.chat.messages,
+      // ];
+
+      // setMockMessages({
+      //   data: {
+      //     chat: {
+      //       ...mockMessages.data.chat,
+      //       messages: newMessages,
+      //     },
+      //   },
+      // });
       setUserMessage('');
     }
   };
+
+  useEffect(() => {
+    if (visitor.loading || !visitor.called || !visitor.data) return;
+    setChatUser({
+      name: visitor.data.addVisitor.first_name,
+      email: visitor.data.addVisitor.email,
+      chats: [],
+      id: visitor.data.addVisitor.id
+    });
+  }, [visitor.loading]);
 
   const handleGuestSignup = (e) => {
     e.preventDefault();
 
     if (guestInput.name !== '' && guestInput.email !== '') {
-      setChatUser({ name: guestInput.name, email: guestInput.email });
+      return addVisitor({
+        variables: {
+          email: guestInput.email,
+          firstName: guestInput.name,
+        },
+      });
     }
   };
+
+
+  // const {data: testData} = useSubscription(queries.getMessages);
+
+  // useEffect(() => {
+  //   console.log(testData);
+  // }, [testData]);
+  
 
   return (
     <div className="chat">

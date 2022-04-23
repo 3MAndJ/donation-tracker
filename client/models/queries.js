@@ -113,5 +113,94 @@ queries.addChapter = gql`mutation addChapter ($name: String!, $street: String!, 
         }
       }`;
 
+queries.addVisitor = gql`mutation AddVisitor($email: String!, $firstName: String!) {
+  addVisitor(email: $email, first_name: $firstName) {
+    id
+    email
+    first_name
+    chats {
+      id
+    }
+  }
+}`;
+
+queries.postMessage = gql`
+  mutation CreateMessage($message: String!, $sentBy: String!, $receivedBy: String!, $chatId: Int!) {
+  createMessage(message: $message, sent_by: $sentBy, received_by: $receivedBy, chat_id: $chatId) {
+    message
+    chats {
+      users {
+        first_name
+      }
+      visitors {
+        first_name
+      }
+      messages {
+        id
+        message
+        sent_by
+        received_by
+        created_at
+      }
+    }
+  }
+}`;
+
+queries.addVisitor = gql`
+mutation AddVisitor($firstName: String!, $email: String!) {
+  addVisitor(first_name: $firstName, email: $email) {
+    id,
+    first_name,
+    email,
+  }
+}`;
+
+queries.getChats = gql`
+  query Chat($chatId: Int) {
+  chat(id: $chatId) {
+    id
+    users {
+      first_name
+      email
+    }
+    visitors {
+      id
+      email
+      first_name
+    }
+    messages {
+      id
+      message
+      sent_by
+      received_by
+      created_at
+    }
+  }
+}`;
+
+queries.getMessages = gql`
+  subscription NewMessage($id: Int!) {
+  newMessage(id: $id) {
+    id
+    messages {
+      id
+      message
+      sent_by
+      received_by
+      created_at
+    }
+    users {
+      first_name
+      email
+      chapter_id
+    }
+    visitors {
+      id
+      email
+      first_name
+    }
+  }
+}
+`;
 
 export default queries;
