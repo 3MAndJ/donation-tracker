@@ -177,7 +177,7 @@ export default function Chat() {
       postMessage({
         variables: { message: userMessage, 
           sentBy: chatUser.name,
-          receivedBy: chatUser.id ? mockMessages.chat.users.email : mockMessages.data.chat.visitors.id, 
+          receivedBy: chatUser.id ? mockMessages.chat.users.email : mockMessages.chat.visitors.id, 
           chatId: 2 
         },
       })
