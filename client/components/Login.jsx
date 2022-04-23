@@ -12,6 +12,7 @@ import Container from '@mui/material/Container';
 import queries from '../models/queries';
 import useToken from '../hooks/useToken';
 import { UserContext } from '../hooks/userContext';
+import { Divider } from '@mui/material';
 import { useMutation } from '@apollo/client';
 
 export default function Login() {

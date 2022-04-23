@@ -1,6 +1,5 @@
 const AppError = require('../utils/AppError');
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
 const client = require('../models.js');
 
 usersController = {};
