@@ -10,43 +10,88 @@ import {
   useSubscription,
   useMutation,
   gql,
+  useQuery,
 } from '@apollo/client';
-import { WebSocketLink } from 'apollo-link-ws';
 
-// const link = new WebSocketLink({
-//   uri: `ws://localhost:3000/`,
-//   options: {
-//     reconnect: true,
-//   },
-// });
 
-// const client = new ApolloClient({
-//   link,
-//   uri: "http://localhost:3000/",
-//   cache: new InMemoryCache(),
-// });
+const POST_MESSAGE = gql`
+  mutation CreateMessage($message: String!, $sentBy: String!, $receivedBy: String!, $chatId: Int!) {
+  createMessage(message: $message, sent_by: $sentBy, received_by: $receivedBy, chat_id: $chatId) {
+    chats {
+      users {
+        first_name
+      }
+      visitors {
+        first_name
+      }
+      messages {
+        id
+        message
+        sent_by
+        received_by
+        created_at
+      }
+    }
+  }
+}`;
 
-// const GET_MESSAGES = gql`
-//   subscription {
-//     messages {
-//       id
-//       content
-//       user
-//     }
-//   }
-// `;
+const GET_CHATS = gql`
+  query Chat($chatId: Int) {
+  chat(id: $chatId) {
+    id
+    users {
+      first_name
+      email
+    }
+    visitors {
+      id
+      email
+      first_name
+    }
+    messages {
+      id
+      message
+      sent_by
+      received_by
+      created_at
+    }
+  }
+}`;
 
-// const POST_MESSAGE = gql`
-//   mutation($user: String!, $content: String!) {
-//     postMessage(user: $user, content: $content)
-//   }
-// `;
+const GET_MESSAGES = gql`
+  subscription NewMessage($id: Int!) {
+  newMessage(id: $id) {
+    id
+    messages {
+      id
+      message
+      sent_by
+      received_by
+      created_at
+    }
+    users {
+      first_name
+      email
+      chapter_id
+    }
+    visitors {
+      id
+      email
+      first_name
+    }
+  }
+}
+`;
 
 export default function Chat() {
-  //   const { data } = useSubscription(GET_MESSAGES);
-  //   if (!data) {
-  //     return null;
-  //   }
+  const { subscribeToMore, data, loading } = useQuery(GET_CHATS, {
+    variables: {
+      chatId: 2,
+    }
+  });
+  // if (!data) {
+  //   return null;
+  // }
 
   const {user} = useContext(UserContext);
   const [chatActive, setChatActive] = useState(false);
@@ -56,26 +101,45 @@ export default function Chat() {
     name: '',
     email: '',
   });
-  const [mockMessages, setMockMessages] = useState({
-    data: {
-      chat: {
-        users: {
-          first_name: 'Milos',
-        },
-        visitors: {
-          first_name: 'Jonathan',
-        },
-        messages: [
-          {
-            created_at: '1650594668915',
-            received_by: 'ff1a73a8-540e-4bce-a86f-899347d61c3e',
-            sent_by: '123test@testemail.com',
-            message: 'First Message',
-          },
-        ],
-      },
-    },
-  });
+  const [mockMessages, setMockMessages] = useState({});
+
+  useEffect(() => {
+    if (loading) return;
+    console.log(data);
+    setMockMessages(data);
+  }, [loading, data]);
+
+/* Subscribing to the GET_MESSAGES query and updating the query with the new data. */
+  useEffect(() => {
+    subscribeToMore({
+      document: GET_MESSAGES,
+      variables: { id: 2 },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data.newMessage) return prev;
+        return Object.assign({}, prev, subscriptionData.data.newMessage);
+      }
+    });
+  },[]);
+  // const [mockMessages, setMockMessages] = auseState({
+  //   data: {
+  //     chat: {
+  //       users: {
+  //         first_name: 'Milos',
+  //       },
+  //       visitors: {
+  //         first_name: 'Jonathan',
+  //       },
+  //       messages: [
+  //         {
+  //           created_at: '1650594668915',
+  //           received_by: 'ff1a73a8-540e-4bce-a86f-899347d61c3e',
+  //           sent_by: '123test@testemail.com',
+  //           message: 'First Message',
+  //         },
+  //       ],
+  //     },
+  //   },
+  // });
 
   useEffect(() => {
     const chat = document.querySelector('.chat');
@@ -178,7 +242,7 @@ export default function Chat() {
             <p>Chatting with: Bronx Chapter...</p>
           </div>
           <div className="chatMessages">
-            {mockMessages.data.chat.messages.map((messageObject, index) => (
+            {mockMessages.chat.messages.map((messageObject, index) => (
               <p key={index} className="chatMessage">
                 <b>{messageObject.sent_by}</b>: {messageObject.message}
               </p>
