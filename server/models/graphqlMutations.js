@@ -7,6 +7,7 @@ require('dotenv').config();
 const {ItemType, ChapterType, UserType, AuthPayload, VisitorsType, ChatType, MessageType} = require ('./graphqlTypes.js');
 const { prisma } = require('@prisma/client');
 const { user } = require('pg/lib/defaults');
+const pubsub = require('./pubsub.js');
 
 const {
     GraphQLError,
@@ -71,6 +72,7 @@ const Mutations = new GraphQLObjectType({
         message: { type: new GraphQLNonNull(GraphQLString) },
         sent_by: { type: new GraphQLNonNull(GraphQLString) },
         received_by: { type: new GraphQLNonNull(GraphQLString) },
+        chat_id: { type: new GraphQLNonNull(GraphQLInt) }
       },
       async resolve(parent, args, context) {
         const message = await context.prisma.messages.create({
@@ -78,15 +80,25 @@ const Mutations = new GraphQLObjectType({
             message: args.message,
             sent_by: args.sent_by,
             received_by: args.received_by,
+            chat_id: args.chat_id
           },
           select: {
             created_at: true,
             received_by: true,
             sent_by: true,
             message: true,
+            chats: {
+              select: {
+                id: true,
+                users: true,
+                visitors: true,
+                messages: true
+              }
+            }
           }
         });
 
+        pubsub.publish('NEW_MESSAGE', { newMessage: message.chats});
         return message;
       }
     },
